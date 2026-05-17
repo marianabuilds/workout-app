@@ -1,0 +1,17 @@
+export const C = {
+  bg: '#020d0a',
+  surface: '#071410',
+  text: '#d7e4e1',
+  muted: 'rgba(209,235,227,0.62)',
+  dim: 'rgba(209,235,227,0.4)',
+  accent: '#28ffbf',
+  accentDark: '#0e5844',
+  accentBorder: '#65e7c4',
+  activeTab: '#28ffbf',
+  cardBorder: 'rgba(145,182,171,0.2)',
+  chipBg: 'rgba(184,224,212,0.12)',
+  chipAccentBg: 'rgba(0,255,179,0.12)',
+  statBg: 'rgba(129,218,192,0.05)',
+  font: '"Azeret Mono", monospace',
+  bodyFont: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+};
