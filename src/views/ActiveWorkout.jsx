@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronDown, ChevronUp, Plus, Minus, Check, Timer, X } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Plus, Minus, Check, Timer, X, Sparkles } from 'lucide-react';
 import StatusBar from '../components/StatusBar';
 import ExerciseImage from '../components/ExerciseImage';
 import { useRestTimer } from '../hooks/useRestTimer';
 import { WORKOUTS } from '../lib/exercises';
 import { getCachedSchedule, getManualOverrides } from '../lib/aiSchedule';
+import { getWarmupForWorkout, getStretchTip } from '../lib/stretches';
 import { C } from '../lib/theme';
 
 const TYPE_COLORS = {
@@ -222,7 +223,7 @@ function CheckInScreen({ workoutName, onStart, onBack }) {
       <div style={{ padding: '24px 20px 0' }}>
         <button
           disabled={!allSet}
-          onClick={() => onStart(rec)}
+          onClick={() => onStart(rec, energy)}
           style={{
             width: '100%', background: allSet ? C.accent : C.chipBg,
             border: 'none', borderRadius: 14, padding: '16px 0',
@@ -352,24 +353,161 @@ function ExerciseCard({ ex, exIdx, isOpen, onToggle, onUpdateSet, onCompleteSet 
   );
 }
 
+/* ── Stretching screen ─────────────────────────────────────────── */
+function StretchingScreen({ workoutName, exercises, intensity, energy, onDone, onBack }) {
+  const stretches = getWarmupForWorkout(exercises);
+  const tip = getStretchTip(intensity, energy);
+  const [checked, setChecked] = useState(new Set());
+
+  function toggle(i) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }
+
+  const allDone = checked.size >= stretches.length;
+
+  return (
+    <div style={{ background: C.bg, fontFamily: C.bodyFont, minHeight: '100vh', paddingBottom: 100 }}>
+      <StatusBar />
+
+      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 16px 0' }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2, padding: '6px 4px' }}>
+          <ChevronLeft size={20} color={C.accent} />
+          <span style={{ color: C.accent, fontSize: 15, fontFamily: C.font }}>Back</span>
+        </button>
+      </div>
+
+      {/* Header */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <p style={{ color: C.muted, fontSize: 12, margin: '0 0 4px', letterSpacing: '0.8px', textTransform: 'uppercase', fontFamily: C.font }}>{workoutName}</p>
+        <h1 style={{ color: C.text, fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: '-0.7px', lineHeight: 1.2, fontFamily: C.font }}>
+          Warm-up &<br />Stretch
+        </h1>
+        <p style={{ color: C.muted, fontSize: 13, margin: '8px 0 0', lineHeight: 1.6 }}>
+          {checked.size}/{stretches.length} complete · check off each stretch before lifting
+        </p>
+      </div>
+
+      {/* AI Trainer tip */}
+      <div style={{ margin: '16px 20px 0', background: C.accentDark, border: `1px solid ${C.accentBorder}`, borderRadius: 16, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <Sparkles size={16} color={C.accent} style={{ flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <p style={{ color: C.accent, fontSize: 10, letterSpacing: '0.8px', textTransform: 'uppercase', margin: '0 0 6px', fontFamily: C.font }}>
+              AI Trainer
+            </p>
+            <p style={{ color: C.text, fontSize: 13, lineHeight: 1.6, margin: 0 }}>{tip}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stretch list */}
+      <div style={{ padding: '16px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {stretches.map((stretch, i) => {
+          const done = checked.has(i);
+          return (
+            <div
+              key={stretch.name}
+              style={{
+                background: done ? C.chipAccentBg : C.surface,
+                border: `1px solid ${done ? C.accentBorder : C.cardBorder}`,
+                borderRadius: 14, padding: '14px 16px',
+                display: 'flex', alignItems: 'flex-start', gap: 14,
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <p style={{ color: done ? C.muted : C.text, fontSize: 14, fontWeight: 600, margin: '0 0 4px', textDecoration: done ? 'line-through' : 'none' }}>
+                  {stretch.name}
+                </p>
+                <p style={{ color: C.muted, fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>{stretch.desc}</p>
+                <span style={{ display: 'inline-block', background: C.chipBg, borderRadius: 20, padding: '3px 10px', fontSize: 11, color: C.dim, fontFamily: C.font }}>
+                  {stretch.duration}s
+                </span>
+              </div>
+              <button
+                onClick={() => toggle(i)}
+                style={{
+                  flexShrink: 0, width: 34, height: 34, borderRadius: '50%', marginTop: 2,
+                  background: done ? C.accent : 'transparent',
+                  border: `1.5px solid ${done ? C.accent : C.cardBorder}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >
+                <Check size={16} color={done ? '#020d0a' : C.muted} strokeWidth={done ? 3 : 2} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <button
+          onClick={onDone}
+          style={{
+            width: '100%',
+            background: allDone ? C.accent : C.accentDark,
+            border: `1px solid ${C.accentBorder}`,
+            borderRadius: 14, padding: '16px 0',
+            color: allDone ? '#020d0a' : C.accent,
+            fontSize: 16, fontWeight: 700, fontFamily: C.font,
+            cursor: 'pointer', letterSpacing: '-0.3px', transition: 'all 0.2s',
+          }}
+        >
+          {allDone ? 'Start Workout' : 'Skip & Start Workout'}
+        </button>
+        {!allDone && (
+          <p style={{ color: C.dim, fontSize: 12, textAlign: 'center', margin: '10px 0 0', fontFamily: C.font }}>
+            Complete all stretches for the full warm-up benefit
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main ──────────────────────────────────────────────────────── */
 export default function ActiveWorkout() {
   const navigate = useNavigate();
   const todayData = getWorkoutData();
   const [phase,       setPhase]       = useState('checkin');
   const [intensity,   setIntensity]   = useState(null);
+  const [energyScore, setEnergyScore] = useState(null);
   const [logs,        setLogs]        = useState([]);
   const [expandedIdx, setExpandedIdx] = useState(0);
   const { timeLeft, running, start, stop, addTime } = useRestTimer(90);
 
-  function handleStart(selectedIntensity) {
+  function handleStart(selectedIntensity, energy) {
     setIntensity(selectedIntensity);
-    setLogs(buildExerciseLogs(todayData.exercises, selectedIntensity));
+    setEnergyScore(energy);
+    setPhase('stretching');
+  }
+
+  function handleStretchDone() {
+    setLogs(buildExerciseLogs(todayData.exercises, intensity));
     setPhase('workout');
   }
 
   if (phase === 'checkin') {
     return <CheckInScreen workoutName={todayData.name} onStart={handleStart} onBack={() => navigate(-1)} />;
+  }
+
+  if (phase === 'stretching') {
+    return (
+      <StretchingScreen
+        workoutName={todayData.name}
+        exercises={todayData.exercises}
+        intensity={intensity}
+        energy={energyScore}
+        onDone={handleStretchDone}
+        onBack={() => setPhase('checkin')}
+      />
+    );
   }
 
   const typeColor = TYPE_COLORS[todayData.type] || C.accent;

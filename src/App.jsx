@@ -7,6 +7,7 @@ import Insights from './views/Insights';
 import Profile from './views/Profile';
 import History from './views/History';
 import BottomNav from './components/BottomNav';
+import Sidebar from './components/Sidebar';
 
 const HIDE_NAV = ['/active'];
 
@@ -15,18 +16,21 @@ function Layout() {
   const showNav = !HIDE_NAV.includes(pathname);
 
   return (
-    <>
-      <Routes>
-        <Route path="/"               element={<Dashboard />} />
-        <Route path="/schedule"       element={<Schedule />} />
-        <Route path="/workout/:id"    element={<WorkoutDetail />} />
-        <Route path="/active"         element={<ActiveWorkout />} />
-        <Route path="/insights"       element={<Insights />} />
-        <Route path="/history"        element={<History />} />
-        <Route path="/profile"        element={<Profile />} />
-      </Routes>
-      {showNav && <BottomNav />}
-    </>
+    <div className="flex min-h-screen" style={{ background: '#020d0a' }}>
+      <Sidebar />
+      <div className="flex-1 min-h-screen md:ml-64 overflow-x-hidden">
+        <Routes>
+          <Route path="/"               element={<Dashboard />} />
+          <Route path="/schedule"       element={<Schedule />} />
+          <Route path="/workout/:id"    element={<WorkoutDetail />} />
+          <Route path="/active"         element={<ActiveWorkout />} />
+          <Route path="/insights"       element={<Insights />} />
+          <Route path="/history"        element={<History />} />
+          <Route path="/profile"        element={<Profile />} />
+        </Routes>
+        {showNav && <BottomNav />}
+      </div>
+    </div>
   );
 }
 

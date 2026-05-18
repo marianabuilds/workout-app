@@ -13,15 +13,12 @@ body {
   margin: 0;
   background: #020d0a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  display: flex;
-  justify-content: center;
   min-height: 100vh;
   overscroll-behavior: none;
 }
 
 #root {
   width: 100%;
-  max-width: 393px;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
