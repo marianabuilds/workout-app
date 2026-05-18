@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight, Dumbbell } from 'lucide-react';
 import { EXERCISE_IMAGES } from '../lib/exercises';
 import { C } from '../lib/theme';
 
-export default function ExerciseImage({ name, height = 200, style = {} }) {
-  const images = EXERCISE_IMAGES[name] || [];
+export default function ExerciseImage({ name, images: imagesProp, height = 200, style = {} }) {
+  const images = imagesProp ?? (EXERCISE_IMAGES[name] || []);
   const [idx, setIdx] = useState(0);
   const [status, setStatus] = useState('loading');
   const touchStartX = useRef(null);

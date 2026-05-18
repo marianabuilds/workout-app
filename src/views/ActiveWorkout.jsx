@@ -7,6 +7,7 @@ import { useRestTimer } from '../hooks/useRestTimer';
 import { WORKOUTS } from '../lib/exercises';
 import { getCachedSchedule, getManualOverrides } from '../lib/aiSchedule';
 import { getWarmupForWorkout, getStretchTip } from '../lib/stretches';
+import { saveWorkoutSession, getLastSession } from '../lib/sessionHistory';
 import { C } from '../lib/theme';
 
 const TYPE_COLORS = {
@@ -269,6 +270,7 @@ function TimerOverlay({ timeLeft, onStop, onAdd }) {
 function ExerciseCard({ ex, exIdx, isOpen, onToggle, onUpdateSet, onCompleteSet }) {
   const setsCompleted = ex.logs.filter(s => s.done).length;
   const allDone = setsCompleted === ex.logs.length;
+  const last = getLastSession(ex.name);
 
   return (
     <div style={{
@@ -294,6 +296,11 @@ function ExerciseCard({ ex, exIdx, isOpen, onToggle, onUpdateSet, onCompleteSet 
           <p style={{ color: C.dim, fontSize: 12, margin: '3px 0 0', fontFamily: C.font }}>
             {setsCompleted}/{ex.sets} sets · {ex.reps} reps · {ex.weight > 0 ? `${ex.weight} lb` : 'BW'}
           </p>
+          {last && (
+            <p style={{ color: C.dim, fontSize: 11, margin: '2px 0 0', fontFamily: C.font, opacity: 0.7 }}>
+              Last: {last.weight > 0 ? `${last.weight} lb` : 'BW'} × {last.reps} reps
+            </p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginRight: 6 }}>
           {ex.logs.map((s, i) => (
@@ -358,6 +365,7 @@ function StretchingScreen({ workoutName, exercises, intensity, energy, onDone, o
   const stretches = getWarmupForWorkout(exercises);
   const tip = getStretchTip(intensity, energy);
   const [checked, setChecked] = useState(new Set());
+  const [expandedIdx, setExpandedIdx] = useState(null);
 
   function toggle(i) {
     setChecked(prev => {
@@ -365,6 +373,10 @@ function StretchingScreen({ workoutName, exercises, intensity, energy, onDone, o
       next.has(i) ? next.delete(i) : next.add(i);
       return next;
     });
+  }
+
+  function toggleExpand(i) {
+    setExpandedIdx(prev => (prev === i ? null : i));
   }
 
   const allDone = checked.size >= stretches.length;
@@ -408,38 +420,68 @@ function StretchingScreen({ workoutName, exercises, intensity, energy, onDone, o
       <div style={{ padding: '16px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {stretches.map((stretch, i) => {
           const done = checked.has(i);
+          const isExpanded = expandedIdx === i;
+          const hasImages = stretch.images?.length > 0;
           return (
             <div
               key={stretch.name}
               style={{
                 background: done ? C.chipAccentBg : C.surface,
-                border: `1px solid ${done ? C.accentBorder : C.cardBorder}`,
-                borderRadius: 14, padding: '14px 16px',
-                display: 'flex', alignItems: 'flex-start', gap: 14,
+                border: `1px solid ${done ? C.accentBorder : isExpanded ? C.accentBorder + '88' : C.cardBorder}`,
+                borderRadius: 14, overflow: 'hidden',
                 transition: 'all 0.2s',
               }}
             >
-              <div style={{ flex: 1 }}>
-                <p style={{ color: done ? C.muted : C.text, fontSize: 14, fontWeight: 600, margin: '0 0 4px', textDecoration: done ? 'line-through' : 'none' }}>
-                  {stretch.name}
-                </p>
-                <p style={{ color: C.muted, fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>{stretch.desc}</p>
-                <span style={{ display: 'inline-block', background: C.chipBg, borderRadius: 20, padding: '3px 10px', fontSize: 11, color: C.dim, fontFamily: C.font }}>
-                  {stretch.duration}s
-                </span>
-              </div>
+              {/* Header row — tap to expand image */}
               <button
-                onClick={() => toggle(i)}
+                onClick={() => toggleExpand(i)}
                 style={{
-                  flexShrink: 0, width: 34, height: 34, borderRadius: '50%', marginTop: 2,
-                  background: done ? C.accent : 'transparent',
-                  border: `1.5px solid ${done ? C.accent : C.cardBorder}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', transition: 'all 0.2s',
+                  width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '14px 16px',
+                  display: 'flex', alignItems: 'flex-start', gap: 14, textAlign: 'left',
                 }}
               >
-                <Check size={16} color={done ? '#020d0a' : C.muted} strokeWidth={done ? 3 : 2} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ color: done ? C.muted : C.text, fontSize: 14, fontWeight: 600, margin: '0 0 4px', textDecoration: done ? 'line-through' : 'none' }}>
+                    {stretch.name}
+                  </p>
+                  <p style={{ color: C.muted, fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>{stretch.desc}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ display: 'inline-block', background: C.chipBg, borderRadius: 20, padding: '3px 10px', fontSize: 11, color: C.dim, fontFamily: C.font }}>
+                      {stretch.duration}s
+                    </span>
+                    {hasImages && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: isExpanded ? C.accent : C.dim, fontFamily: C.font }}>
+                        {isExpanded ? <ChevronUp size={12} color={C.accent} /> : <ChevronDown size={12} color={C.dim} />}
+                        {isExpanded ? 'Hide' : 'Reference'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); toggle(i); }}
+                  style={{
+                    flexShrink: 0, width: 34, height: 34, borderRadius: '50%', marginTop: 2,
+                    background: done ? C.accent : 'transparent',
+                    border: `1.5px solid ${done ? C.accent : C.cardBorder}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}
+                >
+                  <Check size={16} color={done ? '#020d0a' : C.muted} strokeWidth={done ? 3 : 2} />
+                </button>
               </button>
+
+              {/* Expandable image area */}
+              {isExpanded && (
+                <div style={{ padding: '0 14px 14px' }}>
+                  <ExerciseImage
+                    name={stretch.name}
+                    images={stretch.images}
+                    height={170}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
@@ -597,7 +639,7 @@ export default function ActiveWorkout() {
       {allDone && (
         <div style={{ padding: '24px 16px 0' }}>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => { saveWorkoutSession(logs); navigate('/'); }}
             style={{ width: '100%', background: C.accent, border: 'none', borderRadius: 14, padding: '16px 0', color: '#020d0a', fontSize: 16, fontWeight: 700, fontFamily: C.font, cursor: 'pointer', letterSpacing: '-0.3px' }}
           >
             Finish Workout

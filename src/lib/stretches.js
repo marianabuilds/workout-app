@@ -1,30 +1,87 @@
+const BASE = 'https://wger.de/media/exercise-images';
+
 const MUSCLE_STRETCHES = {
   Biceps: [
-    { name: 'Cross-body Arm Stretch', duration: 30, desc: 'Extend arm across chest, hold with opposite hand. Releases bicep and shoulder tension before curls.' },
-    { name: 'Wrist Circles', duration: 20, desc: '10 slow rotations each direction. Prepares forearms and wrists for pulling movements.' },
+    {
+      name: 'Cross-body Arm Stretch', duration: 30,
+      desc: 'Extend arm across chest, hold with opposite hand. Releases bicep and shoulder tension before curls.',
+      images: [`${BASE}/1192/651a4535-8210-4dbd-8f06-61d95fdd9963.png`],
+    },
+    {
+      name: 'Wrist Circles', duration: 20,
+      desc: '10 slow rotations each direction. Prepares forearms and wrists for pulling movements.',
+      images: [],
+    },
   ],
   Triceps: [
-    { name: 'Overhead Tricep Stretch', duration: 30, desc: 'Raise arm overhead, bend at elbow, use opposite hand to gently pull. Targets the long head of the tricep.' },
-    { name: 'Cross-chest Shoulder Opener', duration: 25, desc: 'Arms behind back, interlace fingers, open chest and squeeze shoulder blades together.' },
+    {
+      name: 'Overhead Tricep Stretch', duration: 30,
+      desc: 'Raise arm overhead, bend at elbow, use opposite hand to gently pull. Targets the long head of the tricep.',
+      images: [`${BASE}/1185/c5ca283d-8958-4fd8-9d59-a3f52a3ac66b.jpg`],
+    },
+    {
+      name: 'Cross-chest Shoulder Opener', duration: 25,
+      desc: 'Arms behind back, interlace fingers, open chest and squeeze shoulder blades together.',
+      images: [],
+    },
   ],
   Deltoids: [
-    { name: 'Arm Circles', duration: 30, desc: '10 forward, 10 backward — small to large. Full range of motion lubricates the shoulder joint.' },
-    { name: 'Cross-body Shoulder Stretch', duration: 30, desc: 'Hold arm across body at shoulder height, opposite hand on elbow. Hits the rear deltoid and rotator cuff.' },
+    {
+      name: 'Arm Circles', duration: 30,
+      desc: '10 forward, 10 backward — small to large. Full range of motion lubricates the shoulder joint.',
+      images: [],
+    },
+    {
+      name: 'Cross-body Shoulder Stretch', duration: 30,
+      desc: 'Hold arm across body at shoulder height, opposite hand on elbow. Hits the rear deltoid and rotator cuff.',
+      images: [`${BASE}/1378/7c1fcf34-fb7e-45e7-a0c1-51f296235315.jpg`],
+    },
   ],
   'Side Delts': [
-    { name: 'Lateral Neck Stretch', duration: 20, desc: 'Tilt head to each side with gentle pressure. Releases upper trapezius tension that limits shoulder range.' },
-    { name: 'Shoulder Pendulum', duration: 20, desc: 'Lean forward, let arm hang loose, make small circles. Decompresses the shoulder joint.' },
+    {
+      name: 'Lateral Neck Stretch', duration: 20,
+      desc: 'Tilt head to each side with gentle pressure. Releases upper trapezius tension that limits shoulder range.',
+      images: [],
+    },
+    {
+      name: 'Shoulder Pendulum', duration: 20,
+      desc: 'Lean forward, let arm hang loose, make small circles. Decompresses the shoulder joint.',
+      images: [],
+    },
   ],
   Brachialis: [
-    { name: 'Elbow Flexor Stretch', duration: 25, desc: 'Extend arm fully, palm facing up, gently pull fingers back. Targets the brachialis which sits underneath the bicep.' },
-    { name: 'Pronation / Supination', duration: 20, desc: '10 slow reps rotating forearm palm-up to palm-down. Warms up the full curl pattern.' },
+    {
+      name: 'Elbow Flexor Stretch', duration: 25,
+      desc: 'Extend arm fully, palm facing up, gently pull fingers back. Targets the brachialis which sits underneath the bicep.',
+      images: [
+        `${BASE}/86/Bicep-hammer-curl-1.png`,
+        `${BASE}/86/Bicep-hammer-curl-2.png`,
+      ],
+    },
+    {
+      name: 'Pronation / Supination', duration: 20,
+      desc: '10 slow reps rotating forearm palm-up to palm-down. Warms up the full curl pattern.',
+      images: [],
+    },
   ],
 };
 
 const GENERAL_WARMUP = [
-  { name: 'Light Cardio', duration: 60, desc: '60 seconds of jumping jacks or marching in place. Raises core temperature 1–2°C which directly improves muscle force output.' },
-  { name: 'Shoulder Rolls', duration: 20, desc: '10 forward, 10 backward. Loosens the shoulder girdle and activates the rotator cuff before any pressing or pulling.' },
-  { name: 'Neck Rolls', duration: 15, desc: 'Slow half-circles, both directions. Releases neck and upper trap tension that restricts shoulder mobility.' },
+  {
+    name: 'Light Cardio', duration: 60,
+    desc: '60 seconds of jumping jacks or marching in place. Raises core temperature 1–2°C which directly improves muscle force output.',
+    images: [],
+  },
+  {
+    name: 'Shoulder Rolls', duration: 20,
+    desc: '10 forward, 10 backward. Loosens the shoulder girdle and activates the rotator cuff before any pressing or pulling.',
+    images: [`${BASE}/123/dumbbell-shoulder-press-large-1.png`, `${BASE}/123/dumbbell-shoulder-press-large-2.png`],
+  },
+  {
+    name: 'Neck Rolls', duration: 15,
+    desc: 'Slow half-circles, both directions. Releases neck and upper trap tension that restricts shoulder mobility.',
+    images: [],
+  },
 ];
 
 const EXERCISE_TO_MUSCLE = {
