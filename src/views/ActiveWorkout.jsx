@@ -7,7 +7,7 @@ import { useRestTimer } from '../hooks/useRestTimer';
 import { WORKOUTS } from '../lib/exercises';
 import { getCachedSchedule, getManualOverrides } from '../lib/aiSchedule';
 import { getWarmupForWorkout, getStretchTip } from '../lib/stretches';
-import { saveWorkoutSession, getLastSession } from '../lib/sessionHistory';
+import { saveWorkoutSession, getLastSession, getRestTimerDefault } from '../lib/sessionHistory';
 import { C } from '../lib/theme';
 
 const TYPE_COLORS = {
@@ -241,8 +241,8 @@ function CheckInScreen({ workoutName, onStart, onBack }) {
 }
 
 /* ── Rest timer overlay ────────────────────────────────────────── */
-function TimerOverlay({ timeLeft, onStop, onAdd }) {
-  const r = 54, circ = 2 * Math.PI * r, pct = Math.max(0, timeLeft / 90);
+function TimerOverlay({ timeLeft, maxTime, onStop, onAdd }) {
+  const r = 54, circ = 2 * Math.PI * r, pct = Math.max(0, timeLeft / maxTime);
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,13,10,0.96)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
       <p style={{ color: C.muted, fontSize: 12, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0, fontFamily: C.font }}>Rest Timer</p>
@@ -517,12 +517,13 @@ function StretchingScreen({ workoutName, exercises, intensity, energy, onDone, o
 export default function ActiveWorkout() {
   const navigate = useNavigate();
   const todayData = getWorkoutData();
+  const restDefault = getRestTimerDefault();
   const [phase,       setPhase]       = useState('checkin');
   const [intensity,   setIntensity]   = useState(null);
   const [energyScore, setEnergyScore] = useState(null);
   const [logs,        setLogs]        = useState([]);
   const [expandedIdx, setExpandedIdx] = useState(0);
-  const { timeLeft, running, start, stop, addTime } = useRestTimer(90);
+  const { timeLeft, running, start, stop, addTime } = useRestTimer(restDefault);
 
   function handleStart(selectedIntensity, energy) {
     setIntensity(selectedIntensity);
@@ -575,12 +576,12 @@ export default function ActiveWorkout() {
         logs: e.logs.map((s, si) => si !== setIdx ? s : { ...s, done: !s.done }),
       }
     ));
-    if (!wasAlreadyDone) start(90);
+    if (!wasAlreadyDone) start(restDefault);
   }
 
   return (
     <div style={{ background: C.bg, fontFamily: C.bodyFont, minHeight: '100vh', paddingBottom: 100 }}>
-      {running && timeLeft > 0 && <TimerOverlay timeLeft={timeLeft} onStop={stop} onAdd={addTime} />}
+      {running && timeLeft > 0 && <TimerOverlay timeLeft={timeLeft} maxTime={restDefault} onStop={stop} onAdd={addTime} />}
       <StatusBar />
 
       {/* Nav */}
@@ -590,7 +591,7 @@ export default function ActiveWorkout() {
           <span style={{ color: C.accent, fontSize: 15, fontFamily: C.font }}>Back</span>
         </button>
         <span style={{ color: C.muted, fontSize: 13, fontFamily: C.font }}>{totalDone}/{totalSets} sets</span>
-        <button onClick={() => start(90)} style={{ background: C.chipBg, border: `1px solid ${C.cardBorder}`, borderRadius: 8, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+        <button onClick={() => start(restDefault)} style={{ background: C.chipBg, border: `1px solid ${C.cardBorder}`, borderRadius: 8, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
           <Timer size={14} color={C.accent} />
           <span style={{ color: C.accent, fontSize: 13, fontFamily: C.font }}>Rest</span>
         </button>
