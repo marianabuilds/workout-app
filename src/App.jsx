@@ -5,6 +5,7 @@ import WorkoutDetail from './views/WorkoutDetail';
 import ActiveWorkout from './views/ActiveWorkout';
 import Insights from './views/Insights';
 import Profile from './views/Profile';
+import History from './views/History';
 import BottomNav from './components/BottomNav';
 
 const HIDE_NAV = ['/active'];
@@ -21,6 +22,7 @@ function Layout() {
         <Route path="/workout/:id"    element={<WorkoutDetail />} />
         <Route path="/active"         element={<ActiveWorkout />} />
         <Route path="/insights"       element={<Insights />} />
+        <Route path="/history"        element={<History />} />
         <Route path="/profile"        element={<Profile />} />
       </Routes>
       {showNav && <BottomNav />}

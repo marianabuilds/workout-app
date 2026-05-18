@@ -6,6 +6,7 @@ import {
   getCachedSchedule, generateSchedule, clearSchedule,
   getManualOverrides, setManualOverride, clearManualOverride,
 } from '../lib/aiSchedule';
+import { saveScheduleToCloud } from '../lib/workoutHistory';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -205,7 +206,11 @@ export default function Schedule() {
     setGenerating(true); setError(null); setChunk('');
     await generateSchedule({
       onChunk: text => setChunk(text),
-      onDone:  s    => { setSchedule(s); setGenerating(false); },
+      onDone:  s    => {
+        setSchedule(s);
+        setGenerating(false);
+        saveScheduleToCloud(s).catch(err => console.error('Cloud save failed:', err));
+      },
       onError: err  => { setError(err.message); setGenerating(false); },
     });
   }

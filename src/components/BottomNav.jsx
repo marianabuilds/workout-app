@@ -1,12 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Calendar, Zap, BookOpen, User } from 'lucide-react';
+import { Home, Calendar, Zap, Clock, User } from 'lucide-react';
 import { C } from '../lib/theme';
 
 const tabs = [
   { icon: Home,     label: 'Home',     path: '/' },
   { icon: Calendar, label: 'Schedule', path: '/schedule' },
   null, // center action button
-  { icon: BookOpen, label: 'Insights', path: '/insights' },
+  { icon: Clock,    label: 'History',  path: '/history' },
   { icon: User,     label: 'Profile',  path: '/profile' },
 ];
 
